@@ -2,6 +2,7 @@ import { CheckIn, Prisma } from "@prisma/client";
 import { CheckInsRepository } from "../check-ins-repository";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
 
 export class InMemoryCheckInsRepository implements CheckInsRepository{
   
@@ -9,6 +10,8 @@ export class InMemoryCheckInsRepository implements CheckInsRepository{
     public items: CheckIn[] = []
 
    async findByUserIdOnDate(userId: string, date: Date){
+
+      dayjs.extend(isBetween)
 
       const startOfTheDay = dayjs(date).startOf('date')
       const endOfTheDay = dayjs(date).endOf('date')
@@ -18,8 +21,7 @@ export class InMemoryCheckInsRepository implements CheckInsRepository{
          (checkIn) => {
 
             const checkInDate = dayjs(checkIn.created_at)
-            const isOnSameDate = checkInDate.isAfter(startOfTheDay) && checkInDate.isBefore(endOfTheDay)
-
+            const isOnSameDate = checkInDate.isBetween(startOfTheDay, endOfTheDay, null, '[]')
             return checkIn.user_id === userId && isOnSameDate
          }
       )
